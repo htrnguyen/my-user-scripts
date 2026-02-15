@@ -17,9 +17,18 @@
 
 ## Installation
 
+### Install via Greasy Fork
+
+<div align="center">
+  <a href="https://greasyfork.org/vi/scripts/566374-scribd-free-reader">
+    <img src="https://img.shields.io/badge/Install%20from-Greasy%20Fork-black?style=for-the-badge&logo=greasyfork" alt="Install from Greasy Fork" />
+  </a>
+</div>
+
+### Manual Install
+
 1. Install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/).
-2. **Easy Install**: [![Install from Greasy Fork](https://img.shields.io/badge/Install%20from-Greasy%20Fork-black?style=flat-square&logo=greasyfork)](https://greasyfork.org/vi/scripts/566374-scribd-free-reader)
-3. Or [Install from GitHub](./scribd-free-reader.user.js).
+2. [Click Here to Install](./scribd-free-reader.user.js).
 
 ## Usage
 
