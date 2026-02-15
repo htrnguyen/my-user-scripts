@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      2.1
 // @description  Mở tài liệu Scribd ở chế độ xem đầy đủ (Embed Mode) một cách đơn giản và nhẹ nhàng.
-// @author       You
+// @author       htrnguyen
 // @match        https://www.scribd.com/document/*
 // @match        https://www.scribd.com/doc/*
 // @icon         https://raw.githubusercontent.com/htrnguyen/my-user-scripts/main/scripts/scribd-free-reader/logo.png
