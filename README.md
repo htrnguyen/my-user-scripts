@@ -4,9 +4,10 @@ Welcome to my personal collection of userscripts. Here you will find useful scri
 
 ## Script List
 
-| Script Name            | Description                                                | Link                                                                                                                        |
-| ---------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **Scribd Free Reader** | Read Scribd documents for free by converting to embed URL. | [Repo](./scripts/scribd-free-reader/README.md) • [Greasy Fork](https://greasyfork.org/vi/scripts/566374-scribd-free-reader) |
+| Script Name             | Description                                                | Link                                                                                                                        |
+| ----------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Scribd Free Reader**  | Read Scribd documents for free by converting to embed URL. | [Repo](./scripts/scribd-free-reader/README.md) • [Greasy Fork](https://greasyfork.org/vi/scripts/566374-scribd-free-reader) |
+| **AI Prompt Optimizer** | Wrap prompts with an expert persona template.              | [Repo](./scripts/ai-prompt-optimizer/README.md)                                                                             |
 
 ## General Instructions
 
