@@ -28,4 +28,4 @@
 
 ## Author
 
-Created by You.
+Created by [htrnguyen](https://github.com/htrnguyen).
