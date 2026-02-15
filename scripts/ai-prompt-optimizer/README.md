@@ -1,39 +1,42 @@
 # AI Prompt Optimizer
 
 <div align="center">
-  <!-- Placeholder for Logo -->
-  <h1>AI Prompt Optimizer</h1>
+  <h1>✨ AI Prompt Optimizer</h1>
 </div>
 
 ## Introduction
 
-**AI Prompt Optimizer** is a powerful userscript that uses **Groq's Llama 3.3 70B** model to instantly rewrite specific prompts into professional, high-quality instructions for LLMs.
+**AI Prompt Optimizer** helps you write professional LLM prompts instantly. It uses **Groq's Llama 3.3 70B** model to rewrite your ideas into clear, effective instructions.
 
-## Features
+## Key Features (v3.0)
 
-- **Powered by Groq**: Uses Llama 3.3 70B Versatile for state-of-the-art prompt engineering.
-- **One-Click Optimization**: Instantly rewrites your prompt in the chat input.
-- **Multi-Platform Support**: Works on ChatGPT, Claude, Gemini, and Perplexity.
-- **Secure**: Your API Key is stored locally in your browser (Tampermonkey storage).
+- **⚡ Smart Integration**: Optimize button (✨) automatically attaches to the chat input on ChatGPT, Claude, Perplexity, and Gemini.
+- **👁️ Preview & Confirm**: Review the changes before applying them.
+- **🔄 Auto-Regenerate**: Not satisfied? Click regenerate to get a new version instantly.
+- **⚙️ Powered by Groq**: High-speed, high-quality prompt engineering.
 
-## Installation
+## Supported Platforms
 
-1. Install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/).
+| Platform       | Status       |
+| :------------- | :----------- |
+| **ChatGPT**    | ✅ Optimized |
+| **Claude.ai**  | ✅ Optimized |
+| **Perplexity** | ✅ Optimized |
+| **Gemini**     | ✅ Optimized |
+
+## Setup
+
+1. Install [Tampermonkey](https://www.tampermonkey.net/).
 2. [Install the Script Here](./ai-prompt-optimizer.user.js).
-
-## Setup (First Time)
-
-1. Get a **Free API Key** from [Groq Console](https://console.groq.com/keys).
-2. Go to any supported chat site (e.g., ChatGPT).
-3. Click the **⚙️ (Settings)** icon next to the "Optimize" button.
-4. Paste your API Key and click **Save**.
+3. Get a **Free API Key** from [Groq Console](https://console.groq.com/keys).
+4. Click the **⚙️** icon near the input box to save your key.
 
 ## Usage
 
-1. Type a basic prompt (e.g., "explain relativity").
-2. Click **✨ Optimize**.
-3. Watch as the script replaces your text with a detailed, expert-level prompt.
-4. Send!
+1. Type a draft prompt (e.g. _help me code a python snake game_).
+2. Click **✨**.
+3. A preview window will appear showing the professional version.
+4. Click **Apply** to replace your text, or **Regenerate** for another variation.
 
 ## Author
 
