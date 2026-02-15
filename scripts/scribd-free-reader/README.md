@@ -18,7 +18,8 @@
 ## Installation
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/).
-2. [Install the Script Here](./scribd-free-reader.user.js).
+2. **Easy Install**: [![Install from Greasy Fork](https://img.shields.io/badge/Install%20from-Greasy%20Fork-black?style=flat-square&logo=greasyfork)](https://greasyfork.org/vi/scripts/566374-scribd-free-reader)
+3. Or [Install from GitHub](./scribd-free-reader.user.js).
 
 ## Usage
 
