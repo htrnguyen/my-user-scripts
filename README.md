@@ -1,20 +1,20 @@
 # My User Scripts
 
-Chào mừng đến với kho lưu trữ các userscript cá nhân của tôi. Tại đây tổng hợp các script hữu ích để cải thiện trải nghiệm duyệt web.
+Welcome to my personal collection of userscripts. Here you will find useful scripts to enhance your web browsing experience.
 
-## Danh sách Script
+## Script List
 
-| Tên Script             | Mô tả                                                        | Link                                                   |
-| ---------------------- | ------------------------------------------------------------ | ------------------------------------------------------ |
-| **Scribd Free Reader** | Đọc tài liệu Scribd miễn phí bằng cách chuyển đổi URL embed. | [Xem chi tiết](./scripts/scribd-free-reader/README.md) |
+| Script Name            | Description                                                | Link                                                   |
+| ---------------------- | ---------------------------------------------------------- | ------------------------------------------------------ |
+| **Scribd Free Reader** | Read Scribd documents for free by converting to embed URL. | [View Details](./scripts/scribd-free-reader/README.md) |
 
-## Hướng dẫn chung
+## General Instructions
 
-Để sử dụng các script này, bạn cần cài đặt một trình quản lý userscript trên trình duyệt của mình:
+To use these scripts, you need to install a userscript manager on your browser:
 
 - **Chrome/Edge/Firefox/Safari**: [Tampermonkey](https://www.tampermonkey.net/)
 - **Firefox/Chrome**: [Violentmonkey](https://violentmonkey.github.io/) or [Greasemonkey](https://www.greasespot.net/)
 
-## Cài đặt
+## Installation
 
-Truy cập vào thư mục của từng script để xem hướng dẫn cài đặt chi tiết.
+Visit each script's folder for detailed installation instructions.

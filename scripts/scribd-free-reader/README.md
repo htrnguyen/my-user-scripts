@@ -1,3 +1,5 @@
+# Scribd Free Reader
+
 <div align="center">
   <img src="./logo.png" alt="Scribd Free Reader Logo" width="128" />
   <h1>Scribd Free Reader</h1>
@@ -5,24 +7,24 @@
 
 ## Introduction
 
-**Scribd Free Reader** là một userscript siêu nhẹ giúp bạn đọc tài liệu Scribd ở chế độ toàn màn hình (Embed Mode) chỉ với một cú click chuột.
+**Scribd Free Reader** is a lightweight userscript that allows you to read Scribd documents in full-screen (Embed Mode) with just a single click.
 
 ## Features
 
-- **Đơn giản & Hiệu quả**: Chỉ tập trung vào tính năng đọc.
-- **Giao diện sạch**: Nút bấm gọn gàng, không gây phiền.
-- **Nhẹ**: Tối ưu hóa code để không làm chậm trình duyệt.
+- **Simple & Effective**: Focused solely on the reading experience.
+- **Clean Interface**: A neat, unobtrusive floating button.
+- **Lightweight**: Optimized code to ensure zero impact on browser performance.
 
 ## Installation
 
-1. Cài đặt [Tampermonkey](https://www.tampermonkey.net/) hoặc [Violentmonkey](https://violentmonkey.github.io/).
-2. [Cài đặt Script tại đây](./scribd-free-reader.user.js).
+1. Install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/).
+2. [Install the Script Here](./scribd-free-reader.user.js).
 
 ## Usage
 
-1. Mở trang tài liệu Scribd bất kỳ.
-2. Nhấn nút **Sách (Read)** ở góc dưới bên phải.
-3. Script sẽ mở nội dung đầy đủ ở tab mới.
+1. Open any Scribd document page.
+2. Click the **Book Icon** button at the bottom right corner.
+3. The script will open the full document content in a new tab.
 
 ## Author
 
