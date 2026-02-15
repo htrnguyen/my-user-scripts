@@ -7,26 +7,33 @@
 
 ## Introduction
 
-**AI Prompt Optimizer** is a simple userscript that helps you write better prompts for LLMs (ChatGPT, Claude, Gemini, Perplexity). It wraps your input with a proven "Expert Prompt Engineer" template to get higher quality responses.
+**AI Prompt Optimizer** is a powerful userscript that uses **Groq's Llama 3.3 70B** model to instantly rewrite specific prompts into professional, high-quality instructions for LLMs.
 
 ## Features
 
-- **One-Click Optimization**: Instantly wraps your prompt with an expert persona.
+- **Powered by Groq**: Uses Llama 3.3 70B Versatile for state-of-the-art prompt engineering.
+- **One-Click Optimization**: Instantly rewrites your prompt in the chat input.
 - **Multi-Platform Support**: Works on ChatGPT, Claude, Gemini, and Perplexity.
-- **Clean & Lightweight**: No bloat, just the essential functionality.
+- **Secure**: Your API Key is stored locally in your browser (Tampermonkey storage).
 
 ## Installation
 
 1. Install [Tampermonkey](https://www.tampermonkey.net/) or [Violentmonkey](https://violentmonkey.github.io/).
 2. [Install the Script Here](./ai-prompt-optimizer.user.js).
 
+## Setup (First Time)
+
+1. Get a **Free API Key** from [Groq Console](https://console.groq.com/keys).
+2. Go to any supported chat site (e.g., ChatGPT).
+3. Click the **⚙️ (Settings)** icon next to the "Optimize" button.
+4. Paste your API Key and click **Save**.
+
 ## Usage
 
-1. Type your basic prompt into the chat input (e.g., "Write a blog post about coffee").
-2. Click the **✨ Optimize** button.
-3. Your prompt will be automatically formatted to:
-   > You are an expert prompt engineer... {Your Prompt} ...
-4. Send the message!
+1. Type a basic prompt (e.g., "explain relativity").
+2. Click **✨ Optimize**.
+3. Watch as the script replaces your text with a detailed, expert-level prompt.
+4. Send!
 
 ## Author
 
