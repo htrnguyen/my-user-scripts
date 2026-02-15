@@ -2,7 +2,7 @@
 // @name         Scribd Free Reader
 // @namespace    http://tampermonkey.net/
 // @version      2.1
-// @description  Mở tài liệu Scribd ở chế độ xem đầy đủ (Embed Mode) một cách đơn giản và nhẹ nhàng.
+// @description  Open Scribd documents in full-screen (Embed Mode) with just a single click.
 // @author       htrnguyen
 // @match        https://www.scribd.com/document/*
 // @match        https://www.scribd.com/doc/*
@@ -23,7 +23,7 @@
     const btn = document.createElement("button");
     btn.id = "scribd-free-reader-btn";
     btn.innerHTML = ICON_READ;
-    btn.title = "Đọc Full Màn Hình";
+    btn.title = "Read Full Screen";
 
     Object.assign(btn.style, {
       position: "fixed",
@@ -58,7 +58,7 @@
         const embedUrl = `https://www.scribd.com/embeds/${match[1]}/content`;
         window.open(embedUrl, "_blank");
       } else {
-        alert("Không tìm thấy ID tài liệu.");
+        alert("Document ID not found.");
       }
     };
 
