@@ -5,7 +5,7 @@
   <h1>AI Prompt Optimizer</h1>
   <p><b>Professional prompt engineering directly in your browser.</b></p>
   
-  [Install Script](./ai-prompt-optimizer.user.js) • [Groq Console](https://console.groq.com/keys) • [License](https://github.com/htrnguyen/my-user-scripts/blob/main/LICENSE)
+  [GreasyFork](https://greasyfork.org/vi/scripts/566532-ai-prompt-optimizer-groq) • [Install Script](./ai-prompt-optimizer.user.js) • [Groq Console](https://console.groq.com/keys) • [License](https://github.com/htrnguyen/my-user-scripts/blob/main/LICENSE)
 </div>
 
 ---
