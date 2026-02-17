@@ -5,7 +5,13 @@
   <h1>AI Prompt Optimizer</h1>
   <p><b>Professional prompt engineering directly in your browser.</b></p>
   
-  [GreasyFork](https://greasyfork.org/vi/scripts/566532-ai-prompt-optimizer-groq) • [Install Script](./ai-prompt-optimizer.user.js) • [Groq Console](https://console.groq.com/keys) • [License](https://github.com/htrnguyen/my-user-scripts/blob/main/LICENSE)
+  <a href="https://greasyfork.org/vi/scripts/566532-ai-prompt-optimizer-groq">
+    <img src="https://img.shields.io/badge/Install%20from-Greasy%20Fork-black?style=for-the-badge&logo=greasyfork" alt="Install from Greasy Fork" />
+  </a>
+
+<br><br>
+[Install Script](./ai-prompt-optimizer.user.js) • [Groq Console](https://console.groq.com/keys) • [License](https://github.com/htrnguyen/my-user-scripts/blob/main/LICENSE)
+
 </div>
 
 ---
