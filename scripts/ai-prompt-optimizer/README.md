@@ -16,7 +16,7 @@
 
 ---
 
-## 🚀 Overview (v1.0.0)
+## 🚀 Overview (v1.0.1)
 
 **AI Prompt Optimizer** is a minimalist, high-performance browser extension (userscript) designed to help you write better prompts instantly. Powered by **Groq's Llama 3.3 70B**, it transforms your rough ideas into clear, effective instructions for any LLM.
 

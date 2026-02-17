@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name                AI Prompt Optimizer (Groq)
 // @namespace           https://github.com/htrnguyen
-// @version             1.0.0
+// @version             1.0.1
 // @author              htrnguyen
 // @icon                https://raw.githubusercontent.com/htrnguyen/my-user-scripts/main/scripts/ai-prompt-optimizer/logo__ai_prompt_optimizer.gif
 // @license             CC-BY-NC-ND-4.0
@@ -340,7 +340,7 @@
       <div style="flex:1;">
         <h2 style="margin:0; font-size:20px; font-weight:800;">AI Optimizer</h2>
         <div style="font-size:12px; color:var(--mp-text-light);">
-          v1.0.0 | Author: <a href="https://github.com/htrnguyen" target="_blank" class="ap-link">htrnguyen</a>
+          v1.0.1 | Author: <a href="https://github.com/htrnguyen" target="_blank" class="ap-link">htrnguyen</a>
         </div>
       </div>
     </div>
