@@ -1,653 +1,593 @@
 // ==UserScript==
-// @name         AI Prompt Optimizer
-// @namespace    http://tampermonkey.net/
-// @version      3.0
-// @description  Adds a button to optimize your prompt using Groq's Llama 3.3 70B model.
-// @author       htrnguyen
-// @match        *://chatgpt.com/*
-// @match        *://claude.ai/*
-// @match        *://www.perplexity.ai/*
-// @match        *://gemini.google.com/*
-// @icon         https://raw.githubusercontent.com/htrnguyen/my-user-scripts/main/scripts/ai-prompt-optimizer/logo.png
-// @grant        GM_xmlhttpRequest
-// @grant        GM_setValue
-// @grant        GM_getValue
-// @grant        GM_registerMenuCommand
-// @grant        GM_setClipboard
-// @connect      api.groq.com
+// @name                AI Prompt Optimizer (Groq)
+// @namespace           https://github.com/htrnguyen
+// @version             1.0.0
+// @author              htrnguyen
+// @icon                https://raw.githubusercontent.com/htrnguyen/my-user-scripts/main/scripts/ai-prompt-optimizer/logo__ai_prompt_optimizer.gif
+// @license             CC-BY-NC-ND-4.0
+// @copyright           2026 htrnguyen. All Rights Reserved.
+// @description         Refine and optimize your AI prompts using Groq directly in any AI composer. Professional, minimalist, and effective.
+// @match               *://poe.com/*
+// @match               *://grok.com/*
+// @match               *://arena.ai/*
+// @match               *://claude.ai/*
+// @match               *://chat.z.ai/*
+// @match               *://image.z.ai/*
+// @match               *://chatglm.cn/*
+// @match               *://labs.google/*
+// @match               *://chatgpt.com/*
+// @match               *://longcat.chat/*
+// @match               *://chat.qwen.ai/*
+// @match               *://www.kimi.com/*
+// @match               *://www.doubao.com/*
+// @match               *://ernie.baidu.com/*
+// @match               *://chat.mistral.ai/*
+// @match               *://build.nvidia.com/*
+// @match               *://www.perplexity.ai/*
+// @match               *://chat.deepseek.com/*
+// @match               *://gemini.google.com/*
+// @match               *://arena.ai4bharat.org/*
+// @match               *://yuanbao.tencent.com/*
+// @match               *://aistudio.google.com/*
+// @match               *://dreamina.capcut.com/*
+// @match               *://jimeng.jianying.com/*
+// @match               *://copilot.microsoft.com/*
+// @match               *://notebooklm.google.com/*
+// @match               *://www.google.com/search?*udm=50*
+// @connect             api.groq.com
+// @grant               GM_getValue
+// @grant               GM_setValue
+// @grant               GM_xmlhttpRequest
+// @grant               GM_getResourceText
+// @grant               GM_registerMenuCommand
+// @run-at              document-end
+// @noframes
 // ==/UserScript==
 
 (function () {
   "use strict";
 
-  // --- Configuration ---
-  const MODEL = "llama-3.3-70b-versatile";
-  const SYSTEM_PROMPT = `You are an expert prompt engineer. Improve the user's prompt to be clearer, more detailed, and effective for an LLM. Respond ONLY with the improved prompt text, in the same language as the user. Do not add introductions like "Here is the improved prompt:".`;
-
-  const PLATFORMS = {
-    "chatgpt.com": {
-      input: "#prompt-textarea",
-      container: "#prompt-textarea", // Append relative to this
-      offset: { right: 40, bottom: 10 }, // Adjust inside the relative container
-    },
-    "claude.ai": {
-      input: 'div[contenteditable="true"]',
-      container: "fieldset",
-      offset: { right: 10, bottom: 5 },
-    },
-    "perplexity.ai": {
-      input: 'textarea[placeholder*="Ask"]',
-      container: "div.relative.flex.w-full", // Wrapper
-      offset: { right: 60, bottom: 10 },
-    },
-    "gemini.google.com": {
-      input: 'div[contenteditable="true"]',
-      container: "div.input-area",
-      offset: { right: 20, bottom: 20 },
-    },
+  const AI_SETTINGS_KEY = "AIConfig";
+  const DEFAULT_AI_CONFIG = {
+    apiKeyGroq: "",
+    keyIndexGroq: 0,
+    model: "llama-3.3-70b-versatile",
+    systemPrompt:
+      "You are a professional prompt engineer. Your task is to refine and optimize the user's prompt to be more precise, detailed, and effective for high-quality LLM responses. Respond ONLY with the improved prompt text, maintaining the original language used by the user. Do not include any introductions, explanations, or conversational filler.",
   };
 
-  // --- State ---
-  let isOptimizing = false;
-  let currentModal = null;
+  let currentAIConfig = { ...DEFAULT_AI_CONFIG };
+  let settingsModal = null;
 
-  // --- Helpers ---
-  function getHost() {
-    return window.location.hostname.replace("www.", "");
+  // --- Trusted Types & UI Helpers ---
+  let scriptPolicy = null;
+  if (window.trustedTypes && window.trustedTypes.createPolicy) {
+    try {
+      scriptPolicy = window.trustedTypes.createPolicy("AIPromptPolicy", {
+        createHTML: (input) => input,
+      });
+    } catch (e) {}
   }
 
-  function getPlatformConfig() {
-    return PLATFORMS[getHost()];
+  function setSafeInnerHTML(element, html) {
+    if (!element) return;
+    if (scriptPolicy) element.innerHTML = scriptPolicy.createHTML(html);
+    else element.innerHTML = html;
   }
 
-  function getInput() {
-    const config = getPlatformConfig();
-    if (!config) return null;
-    return document.querySelector(config.input);
-  }
+  const ICONS = {
+    magic: `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>`,
+    loading: `<svg viewBox="0 0 50 50" style="width:100%;height:100%;"><circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-dasharray="80" stroke-dashoffset="20"><animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="0.8s" repeatCount="indefinite" /></circle></svg>`,
+  };
 
-  function getContainer() {
-    const config = getPlatformConfig();
-    if (!config) return null;
+  const platformSelectors = {
+    chatgpt: "#prompt-textarea",
+    deepseek: "textarea.ds-scroll-area",
+    googleaistudio: "textarea",
+    qwen: ".message-input-textarea",
+    zai: "textarea#chat-input",
+    gemini: 'div.ql-editor[contenteditable="true"]',
+    arena: 'textarea[name="message"]',
+    kimi: 'div.chat-input-editor[contenteditable="true"]',
+    claude: 'div.ProseMirror[contenteditable="true"]',
+    grok: 'div.tiptap.ProseMirror[contenteditable="true"], textarea',
+    perplexity: "#ask-input",
+    longcat: "div.tiptap.ProseMirror",
+    mistral: ".ProseMirror",
+    yuanbao: 'div.ql-editor[contenteditable="true"]',
+    chatglm: "textarea.scroll-display-none",
+    poe: 'textarea[class*="GrowingTextArea_textArea"]',
+    googleModoIA: "textarea.ITIRGe",
+    notebooklm: "textarea.query-box-input",
+    doubao: 'textarea[data-testid="chat_input_input"]',
+    copilot: '#userInput, textarea[data-testid="composer-input"]',
+    glmimage: "textarea.flex.w-full",
+    whisk: "textarea.sc-18deeb1d-8, textarea.DwQls, textarea",
+    ernie: 'div[contenteditable="true"][role="textbox"].editable__QRoAFgYA',
+    dreamina:
+      'textarea.lv-textarea.textarea-xle6zp.prompt-textarea-zqvueo, [contenteditable="true"]',
+    jimengJianying: 'textarea[class*="prompt-textarea"]',
+    nvidiaNim:
+      'textarea.nv-text-area-element[data-testid="nv-text-area-element"]',
+    indicArena: 'textarea[data-testid="rt-input-component"]',
+  };
 
-    let el = document.querySelector(config.input);
-    if (!el) return null;
-
-    // Try to find a stable container to attach to
-    // If container selector is current input, use its parent or itself if it has relative/absolute positioning
-    if (config.container === config.input) {
-      return el.parentElement;
+  // --- Config Management ---
+  async function loadAIConfig() {
+    const saved = await GM_getValue(AI_SETTINGS_KEY);
+    if (saved) {
+      currentAIConfig = { ...DEFAULT_AI_CONFIG, ...saved };
+      if (
+        currentAIConfig.systemPrompt &&
+        currentAIConfig.systemPrompt.includes("Bạn là một chuyên gia")
+      ) {
+        currentAIConfig.systemPrompt = DEFAULT_AI_CONFIG.systemPrompt;
+        await saveAIConfig(currentAIConfig);
+      }
     }
-
-    // Traverse up to find the container
-    return el.closest(config.container) || el.parentElement;
   }
 
-  function getApiKey() {
-    return GM_getValue("GROQ_API_KEY", "");
+  async function saveAIConfig(newConfig) {
+    currentAIConfig = { ...currentAIConfig, ...newConfig };
+    await GM_setValue(AI_SETTINGS_KEY, currentAIConfig);
   }
 
-  function setApiKey(key) {
-    GM_setValue("GROQ_API_KEY", key);
+  async function resetAIConfig() {
+    currentAIConfig = { ...DEFAULT_AI_CONFIG };
+    await GM_setValue(AI_SETTINGS_KEY, currentAIConfig);
+  }
+
+  function getRotatingApiKey() {
+    const raw = currentAIConfig.apiKeyGroq;
+    if (!raw) return null;
+    const keys = raw.split(/[,\s]+/).filter((k) => k.trim());
+    if (keys.length === 0) return null;
+    let idx = currentAIConfig.keyIndexGroq || 0;
+    if (idx >= keys.length) idx = 0;
+    const key = keys[idx];
+    currentAIConfig.keyIndexGroq = (idx + 1) % keys.length;
+    saveAIConfig({ keyIndexGroq: currentAIConfig.keyIndexGroq });
+    return key;
+  }
+
+  // --- AI API Core ---
+  async function callAI_API(promptText, apiKey) {
+    if (!apiKey) throw new Error("API Key missing!");
+
+    return new Promise((resolve, reject) => {
+      GM_xmlhttpRequest({
+        method: "POST",
+        url: "https://api.groq.com/openai/v1/chat/completions",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        data: JSON.stringify({
+          model: currentAIConfig.model,
+          messages: [
+            {
+              role: "system",
+              content:
+                currentAIConfig.systemPrompt || DEFAULT_AI_CONFIG.systemPrompt,
+            },
+            { role: "user", content: promptText },
+          ],
+          temperature: 0.7,
+        }),
+        onload: (res) => {
+          if (res.status === 200) {
+            try {
+              const data = JSON.parse(res.responseText);
+              resolve(data.choices[0].message.content.trim());
+            } catch (e) {
+              reject(new Error("Failed to process AI response."));
+            }
+          } else {
+            reject(new Error(`Groq Error (${res.status})`));
+          }
+        },
+        onerror: () => reject(new Error("API connection failed.")),
+      });
+    });
   }
 
   // --- UI Components ---
-  function createSettingsModal() {
-    const existingModal = document.getElementById("ai-optimizer-settings");
-    if (existingModal) existingModal.remove();
-
-    const modal = document.createElement("div");
-    modal.id = "ai-optimizer-settings";
-    Object.assign(modal.style, {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "100%",
-      height: "100%",
-      backgroundColor: "rgba(0,0,0,0.5)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: "10000",
-    });
-
-    const content = document.createElement("div");
-    Object.assign(content.style, {
-      backgroundColor: "#1f2937",
-      color: "white",
-      padding: "20px",
-      borderRadius: "10px",
-      width: "400px",
-      boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-      fontFamily: "system-ui, -apple-system, sans-serif",
-    });
-
-    const title = document.createElement("h2");
-    title.innerText = "⚙️ AI Optimizer Settings";
-    title.style.marginBottom = "15px";
-    title.style.marginTop = "0";
-
-    const label = document.createElement("label");
-    label.innerText = "Groq API Key:";
-    label.style.display = "block";
-    label.style.marginBottom = "5px";
-    label.style.fontSize = "14px";
-
-    const input = document.createElement("input");
-    input.type = "password";
-    input.value = getApiKey();
-    input.placeholder = "gsk_...";
-    Object.assign(input.style, {
-      width: "100%",
-      padding: "8px",
-      marginBottom: "15px",
-      borderRadius: "5px",
-      border: "1px solid #374151",
-      backgroundColor: "#374151",
-      color: "white",
-      boxSizing: "border-box",
-    });
-
-    const helpText = document.createElement("p");
-    helpText.innerHTML =
-      'Get your free API key at <a href="https://console.groq.com/keys" target="_blank" style="color: #60a5fa;">console.groq.com</a>';
-    helpText.style.fontSize = "12px";
-    helpText.style.color = "#9ca3af";
-    helpText.style.marginBottom = "20px";
-
-    const btnGroup = document.createElement("div");
-    btnGroup.style.display = "flex";
-    btnGroup.style.justifyContent = "flex-end";
-    btnGroup.style.gap = "10px";
-
-    const cancelBtn = document.createElement("button");
-    cancelBtn.innerText = "Cancel";
-    Object.assign(cancelBtn.style, {
-      padding: "8px 15px",
-      borderRadius: "5px",
-      border: "none",
-      backgroundColor: "#4b5563",
-      color: "white",
-      cursor: "pointer",
-    });
-    cancelBtn.onclick = () => modal.remove();
-
-    const saveBtn = document.createElement("button");
-    saveBtn.innerText = "Save";
-    Object.assign(saveBtn.style, {
-      padding: "8px 15px",
-      borderRadius: "5px",
-      border: "none",
-      backgroundColor: "#10b981",
-      color: "white",
-      cursor: "pointer",
-    });
-    saveBtn.onclick = () => {
-      const key = input.value.trim();
-      if (key) {
-        setApiKey(key);
-        alert("API Key saved!");
-        modal.remove();
-      } else {
-        alert("Please enter a valid API key.");
-      }
-    };
-
-    btnGroup.appendChild(cancelBtn);
-    btnGroup.appendChild(saveBtn);
-
-    content.appendChild(title);
-    content.appendChild(label);
-    content.appendChild(input);
-    content.appendChild(helpText);
-    content.appendChild(btnGroup);
-    modal.appendChild(content);
-
-    document.body.appendChild(modal);
-    setTimeout(() => input.focus(), 100);
-  }
-
-  function createPreviewModal(originalText, optimizedText) {
-    if (currentModal) currentModal.remove();
-
-    const modal = document.createElement("div");
-    modal.id = "ai-optimizer-preview";
-    Object.assign(modal.style, {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "100%",
-      height: "100%",
-      backgroundColor: "rgba(0,0,0,0.6)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: "10001",
-      backdropFilter: "blur(2px)", // Nice blur effect
-    });
-
-    const content = document.createElement("div");
-    Object.assign(content.style, {
-      backgroundColor: "#1f2937",
-      color: "white",
-      padding: "25px",
-      borderRadius: "12px",
-      width: "700px",
-      maxWidth: "90vw",
-      maxHeight: "90vh",
-      display: "flex",
-      flexDirection: "column",
-      gap: "15px",
-      boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
-      fontFamily: "system-ui, -apple-system, sans-serif",
-    });
-
-    // Header
-    const header = document.createElement("div");
-    header.style.display = "flex";
-    header.style.justifyContent = "space-between";
-    header.style.alignItems = "center";
-
-    const title = document.createElement("h2");
-    title.innerText = "✨ Optimized Prompt Preview";
-    title.style.margin = "0";
-    title.style.fontSize = "20px";
-    title.style.background = "linear-gradient(90deg, #34d399, #60a5fa)";
-    title.style.webkitBackgroundClip = "text";
-    title.style.webkitTextFillColor = "transparent";
-
-    const closeBtn = document.createElement("button");
-    closeBtn.innerHTML = "✕";
-    Object.assign(closeBtn.style, {
-      background: "transparent",
-      border: "none",
-      color: "#9ca3af",
-      fontSize: "20px",
-      cursor: "pointer",
-      padding: "5px",
-    });
-    closeBtn.onclick = () => modal.remove();
-
-    header.appendChild(title);
-    header.appendChild(closeBtn);
-
-    // Comparison Area
-    const comparison = document.createElement("div");
-    Object.assign(comparison.style, {
-      display: "flex",
-      gap: "15px",
-      flex: "1",
-      minHeight: "200px",
-      overflow: "hidden",
-    });
-
-    // Original
-    const originalBox = document.createElement("div");
-    Object.assign(originalBox.style, {
-      flex: "1",
-      display: "flex",
-      flexDirection: "column",
-      gap: "5px",
-    });
-    const originalLabel = document.createElement("div");
-    originalLabel.innerText = "Original";
-    originalLabel.style.color = "#9ca3af";
-    originalLabel.style.fontSize = "12px";
-    originalLabel.style.fontWeight = "bold";
-
-    const originalTextarea = document.createElement("div");
-    originalTextarea.innerText = originalText;
-    Object.assign(originalTextarea.style, {
-      backgroundColor: "#374151",
-      padding: "10px",
-      borderRadius: "8px",
-      flex: "1",
-      overflowY: "auto",
-      fontSize: "14px",
-      lineHeight: "1.5",
-      color: "#d1d5db",
-      whiteSpace: "pre-wrap",
-    });
-    originalBox.appendChild(originalLabel);
-    originalBox.appendChild(originalTextarea);
-
-    // Optimized
-    const optimizedBox = document.createElement("div");
-    Object.assign(optimizedBox.style, {
-      flex: "1",
-      display: "flex",
-      flexDirection: "column",
-      gap: "5px",
-    });
-    const optimizedLabel = document.createElement("div");
-    optimizedLabel.innerText = "Optimized";
-    optimizedLabel.style.color = "#10b981";
-    optimizedLabel.style.fontSize = "12px";
-    optimizedLabel.style.fontWeight = "bold";
-
-    const optimizedTextarea = document.createElement("textarea");
-    optimizedTextarea.value = optimizedText;
-    Object.assign(optimizedTextarea.style, {
-      backgroundColor: "#064e3b",
-      border: "1px solid #059669",
-      padding: "10px",
-      borderRadius: "8px",
-      flex: "1",
-      overflowY: "auto",
-      fontSize: "14px",
-      lineHeight: "1.5",
-      color: "#ecfdf5",
-      resize: "none",
-      outline: "none",
-      fontFamily: "inherit",
-    });
-    optimizedBox.appendChild(optimizedLabel);
-    optimizedBox.appendChild(optimizedTextarea);
-
-    comparison.appendChild(originalBox);
-    comparison.appendChild(optimizedBox);
-
-    // Actions
-    const actions = document.createElement("div");
-    Object.assign(actions.style, {
-      display: "flex",
-      justifyContent: "flex-end",
-      gap: "10px",
-      marginTop: "10px",
-    });
-
-    const btnStyle = {
-      padding: "10px 16px",
-      borderRadius: "8px",
-      border: "none",
-      cursor: "pointer",
-      fontSize: "14px",
-      fontWeight: "600",
-      display: "flex",
-      alignItems: "center",
-      gap: "6px",
-      transition: "opacity 0.2s",
-    };
-
-    const regenerateBtn = document.createElement("button");
-    regenerateBtn.innerHTML = "🔄 Regenerate";
-    Object.assign(regenerateBtn.style, btnStyle, {
-      backgroundColor: "#4b5563",
-      color: "white",
-    });
-    regenerateBtn.onclick = () => {
-      modal.remove();
-      callGroqApi(originalText); // Call API again
-    };
-
-    const copyBtn = document.createElement("button");
-    copyBtn.innerHTML = "📋 Copy";
-    Object.assign(copyBtn.style, btnStyle, {
-      backgroundColor: "#3b82f6",
-      color: "white",
-    });
-    copyBtn.onclick = () => {
-      GM_setClipboard(optimizedTextarea.value);
-      copyBtn.innerHTML = "✅ Copied";
-      setTimeout(() => (copyBtn.innerHTML = "📋 Copy"), 1500);
-    };
-
-    const applyBtn = document.createElement("button");
-    applyBtn.innerHTML = "✨ Apply";
-    Object.assign(applyBtn.style, btnStyle, {
-      backgroundColor: "#10b981",
-      color: "white",
-    });
-    applyBtn.onclick = () => {
-      updateInput(optimizedTextarea.value);
-      modal.remove();
-    };
-
-    actions.appendChild(regenerateBtn);
-    actions.appendChild(copyBtn);
-    actions.appendChild(applyBtn);
-
-    content.appendChild(header);
-    content.appendChild(comparison);
-    content.appendChild(actions);
-    modal.appendChild(content);
-
-    document.body.appendChild(modal);
-    currentModal = modal;
-  }
-
-  function setButtonState(state, btn) {
-    if (!btn) return;
-
-    if (state === "loading") {
-      btn.innerHTML = "🧠";
-      btn.title = "Optimizing...";
-      btn.disabled = true;
-      btn.style.cursor = "wait";
-      btn.style.opacity = "0.7";
-      btn.style.animation = "pulse 1.5s infinite";
-    } else {
-      btn.innerHTML = "✨";
-      btn.title = "Optimize (Llama 3.3)";
-      btn.disabled = false;
-      btn.style.cursor = "pointer";
-      btn.style.opacity = "1";
-      btn.style.animation = "none";
-    }
-  }
-
-  // --- API Logic ---
-  function callGroqApi(userPrompt) {
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      alert("Please set your Groq API Key first (Click the ⚙️ icon).");
-      return;
-    }
-
-    const btn = document.getElementById("ai-optimizer-btn");
-    setButtonState("loading", btn);
-
-    GM_xmlhttpRequest({
-      method: "POST",
-      url: "https://api.groq.com/openai/v1/chat/completions",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      data: JSON.stringify({
-        model: MODEL,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.7,
-      }),
-      onload: function (response) {
-        setButtonState("idle", btn);
-        if (response.status === 200) {
-          try {
-            const data = JSON.parse(response.responseText);
-            const optimizedText = data.choices[0].message.content;
-            createPreviewModal(userPrompt, optimizedText);
-          } catch (e) {
-            console.error("Groq API Parse Error:", e);
-            alert("Error parsing response from Groq.");
-          }
-        } else {
-          console.error("Groq API Error:", response);
-          alert(`Groq API Error: ${response.status} ${response.statusText}`);
-        }
-      },
-      onerror: function (err) {
-        setButtonState("idle", btn);
-        console.error("Network Error:", err);
-        alert("Network error when connecting to Groq.");
-      },
-    });
-  }
-
-  function updateInput(text) {
-    const input = getInput();
-    if (!input) return;
-
-    if (input.tagName === "TEXTAREA") {
-      input.value = text;
-      input.style.height = "auto"; // Reset height
-      input.style.height = input.scrollHeight + "px"; // Auto-grow
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      input.focus();
-    } else {
-      input.innerText = text;
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      input.focus();
-    }
-  }
-
-  function handleOptimize() {
-    const input = getInput();
-    if (!input) {
-      console.warn("AI Optimizer: Chat input not found.");
-      return;
-    }
-
-    let currentText = "";
-    if (input.tagName === "TEXTAREA") {
-      currentText = input.value;
-    } else {
-      currentText = input.innerText;
-    }
-
-    if (!currentText.trim()) {
-      alert("Please enter a prompt to optimize.");
-      return;
-    }
-
-    callGroqApi(currentText);
-  }
-
-  // --- Initialization ---
-  // Inject custom styles
-  function injectStyles() {
-    if (document.getElementById("ai-optimizer-css")) return;
+  function injectGlobalStyles() {
     const style = document.createElement("style");
-    style.id = "ai-optimizer-css";
-    style.textContent = `
-            @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-                100% { transform: scale(1); }
-            }
-            .ai-opt-btn-container {
-                position: absolute;
-                display: flex;
-                gap: 5px;
-                z-index: 100;
-                transition: opacity 0.2s;
-            }
-            .ai-opt-btn-container:hover {
-                opacity: 1 !important;
-            }
-        `;
+    style.id = "ap-global-styles";
+    setSafeInnerHTML(
+      style,
+      `
+    :root {
+      --mp-primary: #4361ee;
+      --mp-primary-gradient: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+      --mp-bg: #ffffff;
+      --mp-surface: #f8f9fa;
+      --mp-text: #2b2d42;
+      --mp-text-light: #8d99ae;
+      --mp-border: #edf2f4;
+      --mp-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --mp-shadow-hover: 0 8px 30px rgba(67, 97, 238, 0.15);
+    }
+
+    .mp-modal { 
+      position:fixed; top:0; left:0; width:100%; height:100%; 
+      background: rgba(0, 0, 0, 0.1); 
+      display:flex; align-items:center; justify-content:center; 
+      opacity:0; pointer-events:none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      z-index:100001; text-align: left;
+      backdrop-filter: blur(8px);
+    }
+    .mp-modal.visible { opacity:1; pointer-events:auto; }
+    
+    .mp-modal-content { 
+      background: var(--mp-bg) !important; 
+      padding:24px !important; border-radius:24px !important; 
+      width:90% !important; max-width:650px !important; 
+      box-shadow: var(--mp-shadow) !important; 
+      color: var(--mp-text) !important; 
+      font-family: 'Inter', -apple-system, sans-serif !important; 
+      box-sizing: border-box !important; position: relative !important;
+      border: 1px solid var(--mp-border) !important;
+      transform: scale(0.95) translateY(10px);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .mp-modal.visible .mp-modal-content { transform: scale(1) translateY(0); }
+
+    .mp-modal-close {
+      position: absolute !important; top: 20px !important; right: 20px !important;
+      width: 28px !important; height: 28px !important; border-radius: 50% !important;
+      display: flex !important; align-items: center !important; justify-content: center !important;
+      cursor: pointer !important; background: var(--mp-surface) !important; color: var(--mp-text-light) !important;
+      border: none !important; font-size: 16px !important; 
+      transition: all 0.2s !important;
+    }
+    .mp-modal-close:hover { background: #fee2e2 !important; color: #ef4444 !important; }
+
+    .mp-input-group { margin-bottom:16px !important; }
+    .mp-input-group label { 
+      display:block !important; margin-bottom:6px !important; 
+      font-weight:600 !important; font-size:12px !important; 
+      color: var(--mp-text-light) !important; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .mp-input-group input, .mp-input-group textarea { 
+      width:100% !important; padding:12px 16px !important; 
+      border: 2px solid var(--mp-border) !important; border-radius:12px !important; 
+      background: var(--mp-surface) !important; color: var(--mp-text) !important; 
+      font-family:inherit !important; font-size: 14px !important;
+      transition: all 0.2s !important; outline: none !important;
+    }
+    .mp-input-group input:focus, .mp-input-group textarea:focus { 
+      border-color: var(--mp-primary) !important; 
+      background: #fff !important;
+    }
+
+    .mp-btn { 
+      padding:10px 20px !important; border-radius:12px !important; 
+      cursor:pointer !important; font-weight:600 !important; border:none !important; 
+      transition: all 0.2s !important; font-size: 14px !important;
+    }
+    .mp-btn:active { transform: scale(0.98); }
+    .mp-btn-primary { 
+      background: var(--mp-primary-gradient) !important; 
+      color:#fff !important; 
+    }
+    .mp-btn-primary:hover { opacity: 0.95; transform: translateY(-1px); }
+    
+    .mp-diff-container { display: flex !important; gap: 16px !important; margin-bottom: 20px !important; }
+    .mp-diff-col { flex: 1 !important; min-width: 0 !important; }
+    .mp-diff-box { 
+      background: var(--mp-surface) !important; padding:16px !important; border-radius:16px !important; 
+      font-size:13px !important; max-height:300px !important; overflow:auto !important; 
+      white-space:pre-wrap !important; border:1px solid var(--mp-border) !important;
+      line-height: 1.6;
+    }
+    
+    #ap-trigger-fixed {
+      position:fixed !important; bottom:20px !important; right:20px !important; 
+      width:36px !important; height:36px !important; 
+      background: var(--mp-bg) !important;
+      color: var(--mp-primary) !important;
+      border-radius:50% !important; display:flex !important; align-items:center !important; justify-content:center !important; 
+      cursor:pointer !important; z-index:100000 !important; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+      border: 1px solid var(--mp-border) !important;
+    }
+    #ap-trigger-fixed:hover { 
+      transform: rotate(15deg) scale(1.1) !important;
+      border-color: var(--mp-primary) !important;
+      box-shadow: var(--mp-shadow-hover) !important;
+    }
+    #ap-trigger-fixed svg { width:18px; height:18px; }
+
+    #ap-loading {
+      position:fixed !important; top:0 !important; left:0 !important; width:100% !important; height:100% !important;
+      background: rgba(255, 255, 255, 0.8) !important;
+      backdrop-filter: blur(4px) !important;
+      z-index: 1000000 !important;
+      display: none !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 15px !important;
+      color: var(--mp-primary) !important;
+      font-family: 'Inter', -apple-system, sans-serif !important;
+    }
+    #ap-loading.visible { display:flex !important; }
+    #ap-loading .spinner { width: 40px; height: 40px; }
+    #ap-loading .loading-text { font-weight: 600; font-size: 14px; letter-spacing: 0.5px; }
+
+    .ap-helper-text { font-size: 11px; color: var(--mp-text-light); margin-top: 4px; }
+    .ap-link { color: var(--mp-primary); text-decoration: none; font-weight: 500; }
+    .ap-link:hover { text-decoration: underline; }
+    `,
+    );
     document.head.appendChild(style);
   }
 
-  function createUI() {
-    if (document.getElementById("ai-optimizer-btn")) return;
+  function createSettingsModal() {
+    const modal = document.createElement("div");
+    modal.className = "mp-modal";
+    const content = document.createElement("div");
+    content.className = "mp-modal-content";
 
-    const containerNode = getContainer();
-    if (!containerNode) {
-      // console.log('Container not found');
+    setSafeInnerHTML(
+      content,
+      `
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
+      <img src="https://raw.githubusercontent.com/htrnguyen/my-user-scripts/main/scripts/ai-prompt-optimizer/logo__ai_prompt_optimizer.gif" style="width:40px; height:40px; border-radius:10px; box-shadow: var(--mp-shadow);" alt="Logo">
+      <div style="flex:1;">
+        <h2 style="margin:0; font-size:20px; font-weight:800;">AI Optimizer</h2>
+        <div style="font-size:12px; color:var(--mp-text-light);">
+          v1.0.0 | Author: <a href="https://github.com/htrnguyen" target="_blank" class="ap-link">htrnguyen</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mp-input-group">
+      <label>Groq API Key</label>
+      <input type="text" id="ap-key" value="${currentAIConfig.apiKeyGroq}" placeholder="gsk_...">
+      <div class="ap-helper-text">Get your free key at <a href="https://console.groq.com/keys" target="_blank" class="ap-link">Groq Console</a></div>
+    </div>
+    
+    <div class="mp-input-group">
+      <label>Model Selector</label>
+      <input type="text" id="ap-model" value="${currentAIConfig.model}">
+    </div>
+    
+    <div class="mp-input-group">
+      <label>System Core Prompt</label>
+      <textarea id="ap-sys" rows="4">${currentAIConfig.systemPrompt}</textarea>
+    </div>
+    
+    <div style="display:flex; gap:12px; justify-content:space-between; margin-top:30px; padding-top:20px; border-top:1px solid var(--mp-border);">
+      <button id="ap-reset" class="mp-btn" style="background:#fff !important; border:1px solid #ddd !important; color:#666 !important;">Reset to Default</button>
+      <div style="display:flex; gap:12px;">
+        <button id="ap-close" class="mp-btn" style="background:var(--mp-surface); color:var(--mp-text);">Close</button>
+        <button id="ap-save" class="mp-btn mp-btn-primary">Save Changes</button>
+      </div>
+    </div>
+  `,
+    );
+
+    content.querySelector("#ap-save").onclick = async () => {
+      await saveAIConfig({
+        apiKeyGroq: content.querySelector("#ap-key").value.trim(),
+        model: content.querySelector("#ap-model").value.trim(),
+        systemPrompt: content.querySelector("#ap-sys").value.trim(),
+      });
+      hideModal(modal);
+    };
+
+    content.querySelector("#ap-reset").onclick = async () => {
+      if (
+        confirm(
+          "Reset ALL settings to default? This will clear your API Key and custom prompt.",
+        )
+      ) {
+        await resetAIConfig();
+        content.querySelector("#ap-key").value = currentAIConfig.apiKeyGroq;
+        content.querySelector("#ap-model").value = currentAIConfig.model;
+        content.querySelector("#ap-sys").value = currentAIConfig.systemPrompt;
+      }
+    };
+    content.querySelector("#ap-close").onclick = () => hideModal(modal);
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function showAIDiffModal(original, enhanced, onAccept) {
+    const modal = document.createElement("div");
+    modal.className = "mp-modal visible";
+    const content = document.createElement("div");
+    content.className = "mp-modal-content";
+
+    setSafeInnerHTML(
+      content,
+      `
+      <button class="mp-modal-close" id="diff-close">&times;</button>
+      <h2 style="margin:0 0 15px 0 !important; font-size: 20px !important; font-weight: bold !important;">Prompt Comparison</h2>
+      <div class="mp-diff-container">
+        <div class="mp-diff-col">
+          <label style="font-weight:bold !important; display:block !important; margin-bottom:5px !important; color: #333 !important;">Original:</label>
+          <div class="mp-diff-box">${original}</div>
+        </div>
+        <div class="mp-diff-col">
+          <label style="font-weight:bold !important; display:block !important; margin-bottom:5px !important; color:#7c3aed !important;">Optimized:</label>
+          <div class="mp-diff-box mp-diff-box-enhanced" id="enhanced-box">${enhanced}</div>
+        </div>
+      </div>
+      <div style="display:flex !important; gap:12px !important; justify-content:center !important;">
+        <button id="diff-cancel" class="mp-btn" style="flex:1 !important; background:#eee !important; color: #333 !important;">Cancel</button>
+        <button id="diff-regen" class="mp-btn mp-btn-regen" style="flex:1 !important;">Regenerate</button>
+        <button id="diff-ok" class="mp-btn mp-btn-primary" style="flex:1 !important;">Apply</button>
+      </div>
+    `,
+    );
+
+    content.querySelector("#diff-close").onclick = () => hideModal(modal);
+    content.querySelector("#diff-cancel").onclick = () => hideModal(modal);
+    content.querySelector("#diff-ok").onclick = () => {
+      onAccept(content.querySelector("#enhanced-box").innerText);
+      hideModal(modal);
+    };
+    content.querySelector("#diff-regen").onclick = async () => {
+      const btn = content.querySelector("#diff-regen");
+      const box = content.querySelector("#enhanced-box");
+      const apiKey = getRotatingApiKey();
+      if (!apiKey) return alert("API Key missing!");
+
+      btn.disabled = true;
+      btn.innerText = "...";
+      try {
+        const newVal = await callAI_API(original, apiKey);
+        box.innerText = newVal;
+      } catch (e) {
+        alert("Error: " + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Regenerate";
+      }
+    };
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+  }
+
+  function showModal(m) {
+    if (m) m.classList.add("visible");
+  }
+  function hideModal(m) {
+    if (m) {
+      m.classList.remove("visible");
+      setTimeout(() => m.remove(), 300);
+    }
+  }
+
+  function showLoading() {
+    let l = document.getElementById("ap-loading");
+    if (!l) {
+      l = document.createElement("div");
+      l.id = "ap-loading";
+      setSafeInnerHTML(
+        l,
+        `
+        <div class="spinner">${ICONS.loading}</div>
+        <div class="loading-text">Optimizing...</div>
+      `,
+      );
+      document.body.appendChild(l);
+    }
+    requestAnimationFrame(() => l.classList.add("visible"));
+  }
+  function hideLoading() {
+    const l = document.getElementById("ap-loading");
+    if (l) l.classList.remove("visible");
+  }
+
+  // --- Interaction Logic ---
+  async function handleOptimizer() {
+    const selector = platformSelectors[detectPlatform()];
+    if (!selector) return;
+    const editor = document.querySelector(selector);
+    if (!editor) return;
+
+    let text =
+      editor.tagName === "TEXTAREA" || editor.tagName === "INPUT"
+        ? editor.value
+        : editor.innerText || editor.textContent;
+    if (!text || !text.trim()) {
+      alert("Please enter some content first!");
       return;
     }
 
-    // Check if we need to make the container relative
-    const computedStyle = window.getComputedStyle(containerNode);
-    if (computedStyle.position === "static") {
-      containerNode.style.position = "relative";
+    const apiKey = getRotatingApiKey();
+    if (!apiKey) {
+      if (
+        confirm(
+          "API Key missing! Would you like to open the settings panel now?",
+        )
+      ) {
+        if (settingsModal) hideModal(settingsModal);
+        settingsModal = createSettingsModal();
+        showModal(settingsModal);
+      }
+      return;
     }
 
-    const ui = document.createElement("div");
-    ui.className = "ai-opt-btn-container";
-
-    // Dynamic positioning logic (e.g., bottom-right of container)
-    // Hardcoded offsets for now based on platform config
-    const config = getPlatformConfig();
-    const offset =
-      config && config.offset ? config.offset : { right: 10, bottom: 10 };
-
-    Object.assign(ui.style, {
-      bottom: `${offset.bottom}px`,
-      right: `${offset.right}px`,
-      opacity: "0.6", // Fade out when not interacting
-    });
-
-    // Settings Button
-    const settingsBtn = document.createElement("button");
-    settingsBtn.innerHTML = "⚙️";
-    settingsBtn.title = "Settings";
-    Object.assign(settingsBtn.style, {
-      width: "24px",
-      height: "24px",
-      borderRadius: "50%",
-      border: "none",
-      background: "rgba(55, 65, 81, 0.8)",
-      color: "white",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: "14px",
-      transition: "all 0.2s",
-    });
-    settingsBtn.onclick = createSettingsModal;
-
-    // Optimize Button
-    const optimizeBtn = document.createElement("button");
-    optimizeBtn.id = "ai-optimizer-btn";
-    optimizeBtn.innerHTML = "✨";
-    optimizeBtn.title = "Optimize";
-    Object.assign(optimizeBtn.style, {
-      width: "32px",
-      height: "32px",
-      borderRadius: "50%",
-      border: "none",
-      background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-      color: "white",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-      transition: "all 0.2s",
-      fontSize: "16px",
-    });
-    optimizeBtn.onclick = handleOptimize;
-
-    ui.appendChild(settingsBtn);
-    ui.appendChild(optimizeBtn);
-    containerNode.appendChild(ui);
+    showLoading();
+    try {
+      const enhanced = await callAI_API(text, apiKey);
+      hideLoading();
+      showAIDiffModal(text, enhanced, (val) => {
+        if (editor.tagName === "TEXTAREA" || editor.tagName === "INPUT") {
+          editor.value = val;
+        } else {
+          editor.innerText = val;
+        }
+        editor.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    } catch (e) {
+      hideLoading();
+      alert("Error: " + e.message);
+    }
   }
 
-  // Initialize
-  injectStyles();
-  // Register Menu Command
-  GM_registerMenuCommand("API Settings", createSettingsModal);
+  function detectPlatform() {
+    const h = window.location.hostname;
+    for (const id in platformSelectors) if (h.includes(id)) return id;
+    return null;
+  }
 
-  // Initial check
-  setTimeout(createUI, 1500);
+  async function initUI() {
+    if (document.getElementById("ap-trigger-fixed")) return;
+    const btn = document.createElement("div");
+    btn.id = "ap-trigger-fixed";
+    btn.title = "Optimize Prompt (Alt+E)";
+    setSafeInnerHTML(btn, ICONS.magic);
+    btn.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleOptimizer();
+    };
 
-  // Handle dynamic navigation (SPA)
-  let lastUrl = location.href;
-  new MutationObserver((mutations) => {
-    // Init if URL changed
-    if (location.href !== lastUrl) {
-      lastUrl = location.href;
-      setTimeout(createUI, 1000);
-    }
+    // Right-click context for settings directly on button
+    btn.oncontextmenu = (e) => {
+      e.preventDefault();
+      if (settingsModal) hideModal(settingsModal);
+      settingsModal = createSettingsModal();
+      showModal(settingsModal);
+    };
 
-    // Robust check: if button removed, re-add (e.g. React re-render)
-    if (!document.getElementById("ai-optimizer-btn")) {
-      createUI();
-    }
-  }).observe(document.body, { childList: true, subtree: true });
+    document.body.appendChild(btn);
+  }
+
+  async function start() {
+    await loadAIConfig();
+    injectGlobalStyles();
+    initUI();
+
+    // Observer to ensure button exists (some SPA might clear body)
+    new MutationObserver(() => {
+      if (!document.getElementById("ap-trigger-fixed")) initUI();
+    }).observe(document.body, { childList: true });
+
+    GM_registerMenuCommand("⚙️ Groq AI Settings", () => {
+      if (settingsModal) hideModal(settingsModal);
+      settingsModal = createSettingsModal();
+      showModal(settingsModal);
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.altKey && e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        handleOptimizer();
+      }
+    });
+  }
+
+  start();
 })();

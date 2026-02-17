@@ -1,43 +1,43 @@
 # AI Prompt Optimizer
 
 <div align="center">
-  <h1>✨ AI Prompt Optimizer</h1>
+  <img src="logo__ai_prompt_optimizer.gif" width="120" height="120" style="border-radius:24px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" alt="Logo">
+  <h1>AI Prompt Optimizer</h1>
+  <p><b>Professional prompt engineering directly in your browser.</b></p>
+  
+  [Install Script](./ai-prompt-optimizer.user.js) • [Groq Console](https://console.groq.com/keys) • [License](https://github.com/htrnguyen/my-user-scripts/blob/main/LICENSE)
 </div>
 
-## Introduction
+---
 
-**AI Prompt Optimizer** helps you write professional LLM prompts instantly. It uses **Groq's Llama 3.3 70B** model to rewrite your ideas into clear, effective instructions.
+## 🚀 Overview (v1.0.0)
 
-## Key Features (v3.0)
+**AI Prompt Optimizer** is a minimalist, high-performance browser extension (userscript) designed to help you write better prompts instantly. Powered by **Groq's Llama 3.3 70B**, it transforms your rough ideas into clear, effective instructions for any LLM.
 
-- **⚡ Smart Integration**: Optimize button (✨) automatically attaches to the chat input on ChatGPT, Claude, Perplexity, and Gemini.
-- **👁️ Preview & Confirm**: Review the changes before applying them.
-- **🔄 Auto-Regenerate**: Not satisfied? Click regenerate to get a new version instantly.
-- **⚙️ Powered by Groq**: High-speed, high-quality prompt engineering.
+## ✨ Key Features
 
-## Supported Platforms
+- **⚡ Fast Integration**: A subtle ✨ button floats or attaches to your chat input.
+- **🪄 One-Click Optimization**: Use `Alt + E` or click the button to refine your prompt.
+- **👁️ Side-by-Side Review**: Compare and preview changes before applying them.
+- **⚙️ Pro Settings**:
+  - Dual-mode (Save / Apply).
+  - Custom System Prompts for advanced engineers.
+  - Rotating API Key support.
+- **🔄 Reset to Default**: Easily sync back to the latest recommended settings.
 
-| Platform       | Status       |
-| :------------- | :----------- |
-| **ChatGPT**    | ✅ Optimized |
-| **Claude.ai**  | ✅ Optimized |
-| **Perplexity** | ✅ Optimized |
-| **Gemini**     | ✅ Optimized |
+## 🛠️ Supported Platforms
 
-## Setup
+Optimized for **ChatGPT, Claude, Gemini, Perplexity, DeepSeek, Google AI Studio**, and more.
 
-1. Install [Tampermonkey](https://www.tampermonkey.net/).
-2. [Install the Script Here](./ai-prompt-optimizer.user.js).
-3. Get a **Free API Key** from [Groq Console](https://console.groq.com/keys).
-4. Click the **⚙️** icon near the input box to save your key.
+## 📥 Getting Started
 
-## Usage
+1.  Install [Tampermonkey](https://www.tampermonkey.net/).
+2.  Click **[Install Script](./ai-prompt-optimizer.user.js)**.
+3.  Get a **Free API Key** from [Groq Console](https://console.groq.com/keys).
+4.  Open any AI chat -> Click the ✨ button -> Right-click (or settings icon) -> Enter your API Key.
 
-1. Type a draft prompt (e.g. _help me code a python snake game_).
-2. Click **✨**.
-3. A preview window will appear showing the professional version.
-4. Click **Apply** to replace your text, or **Regenerate** for another variation.
+---
 
-## Author
+## 👨‍💻 Author
 
-Created by [htrnguyen](https://github.com/htrnguyen).
+Created with ❤️ by [htrnguyen](https://github.com/htrnguyen).
